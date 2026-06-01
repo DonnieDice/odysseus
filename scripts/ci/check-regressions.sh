@@ -66,6 +66,11 @@ require_pattern "packaging/README.md" "No third-party store credentials" "PR pac
 require_pattern "packaging/README.md" 'Push a matching `vX.Y.Z` tag' "tag-driven release instructions must be documented"
 require_pattern "packaging/README.md" "website/GitHub Pages deployment is intentionally out of scope" "website deployment must stay out of this package pipeline"
 
+if [ -f ".github/workflows/pages.yml" ]; then
+  echo "regression check failed: GitHub Pages deployment is out of scope for this CI/CD package PR" >&2
+  exit 1
+fi
+
 test_count="$(find scripts/tests -maxdepth 1 -type f \( -name 'test_*.py' -o -name '*_test.py' \) | wc -l | tr -d ' ')"
 if [ "${test_count}" -lt 10 ]; then
   echo "regression check failed: expected at least 10 Python unit/regression test files, found ${test_count}" >&2
