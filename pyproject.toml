@@ -40,5 +40,5 @@ dependencies = { file = ["requirements.txt"] }
 optional-dependencies.optional = { file = ["requirements-optional.txt"] }
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["scripts/tests"]
 asyncio_mode = "auto"
