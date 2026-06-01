@@ -227,7 +227,7 @@ jobs:
             -w /work \
             "${{ matrix.container }}" \
             sh -lc '${{ matrix.install }} && bash scripts/ci/build-rpm-package.sh "${{ matrix.target }}" && chown -R "$(stat -c "%u:%g" /work)" artifacts'
-VERSION=$(awk -F'"' '/^version = / { print $2; exit }' pyproject.toml)
+          VERSION=$(awk -F'"' '/^version = / { print $2; exit }' pyproject.toml)
           bash scripts/ci/finalize-artifacts.sh artifacts "rpm-${{ matrix.target }}" "$VERSION" "linux" "rpm"
 
       - name: Read package version
