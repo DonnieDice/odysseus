@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - ci-package-build-pipeline
   workflow_dispatch:
 
 permissions:

@@ -18,7 +18,7 @@ name: Workflow security
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, ci-package-build-pipeline]
   workflow_dispatch:
 
 # Default-deny token; each job grants only read access to the code.
