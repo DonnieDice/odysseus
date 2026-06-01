@@ -328,4 +328,4 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --title "Odysseus ${TAG}" \
             --notes "Versioned Odysseus package artifacts built by GitHub Actions. External AUR/Snap/Flatpak publishing is intentionally maintainer-owned follow-up work."
-          find release-files -type f -print0 | xargs -0 -r -I{} gh release upload "$TAG" "{}" --repo "$GITHUB_REPOSITORY" --clobber
+          find release-files -type f -size +0c -print0 | xargs -0 -r -I{} gh release upload "$TAG" "{}" --repo "$GITHUB_REPOSITORY" --clobber
