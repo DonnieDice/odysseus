@@ -7,8 +7,6 @@ from unittest.mock import MagicMock
 
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _PROJECT_ROOT)
-import warnings
-warnings.warn(f"CONFTEST LOADED: project_root={_PROJECT_ROOT}  core_exists={os.path.isdir(os.path.join(_PROJECT_ROOT, 'core'))}  middleware_exists={os.path.isfile(os.path.join(_PROJECT_ROOT, 'core', 'middleware.py'))}")
 
 def _has_module(mod_name: str) -> bool:
     try:

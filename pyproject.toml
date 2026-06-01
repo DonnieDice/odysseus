@@ -42,3 +42,4 @@ optional-dependencies.optional = { file = ["requirements-optional.txt"] }
 [tool.pytest.ini_options]
 testpaths = ["scripts/tests"]
 asyncio_mode = "auto"
+addopts = "--import-mode=importlib"
