@@ -325,19 +325,35 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install pyinstaller
 
-      - name: Free runner disk space
-        run: |
-          sudo rm -rf /Library/Developer/CoreSimulator /opt/hostedtoolcache/CodeQL /usr/local/lib/android /usr/share/dotnet
-
       - name: Build macOS DMG with PyInstaller
         run: |
-          pyinstaller --onefile --name odysseus --add-data "static:static" --add-data "core:core" --add-data "routes:routes" --add-data "src:src" --add-data "services:services" --add-data "mcp_servers:mcp_servers" --add-data "config:config" --add-data "scripts:scripts" app.py
+          pyinstaller --clean --noconfirm --onefile --name odysseus --add-data "static:static" --add-data "core:core" --add-data "routes:routes" --add-data "src:src" --add-data "services:services" --add-data "mcp_servers:mcp_servers" --add-data "config:config" --add-data "scripts:scripts" app.py
           mkdir -p artifacts
           rm -rf dmg-root
           mkdir -p dmg-root/Odysseus
           cp dist/odysseus dmg-root/Odysseus/odysseus
           chmod +x dmg-root/Odysseus/odysseus
-          hdiutil create -volname Odysseus -srcfolder dmg-root/Odysseus -ov -format UDZO "artifacts/odysseus-macos-${{ github.sha }}.dmg"
+
+          # Free runner disk before hdiutil creates the image.
+          rm -rf build dist
+          python -m pip cache purge || true
+
+          echo "Disk before DMG:"
+          df -h .
+          echo "DMG source size:"
+          du -sh dmg-root/Odysseus
+
+          SRC_MB=$(du -sm dmg-root/Odysseus | awk '{ print $1 }')
+          DMG_MB=$((SRC_MB + 512))
+
+          hdiutil create \
+            -volname Odysseus \
+            -srcfolder dmg-root/Odysseus \
+            -ov \
+            -format UDZO \
+            -fs HFS+ \
+            -size "${DMG_MB}m" \
+            "artifacts/odysseus-macos-${{ github.sha }}.dmg"
 
       - name: Finalize artifacts
         run: |
