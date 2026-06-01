@@ -50,13 +50,14 @@ jobs:
           python -m pytest -q scripts/tests/test_session_mode_helpers.py --junitxml=test-session-mode-results.xml
           python -m pytest -q --ignore=scripts/tests/test_session_mode_helpers.py --junitxml=test-results.xml
 
-      - name: Upload test results
+      - name: Publish test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: dorny/test-reporter@6c3f2f337a69441e4e831b9a95cfef1bffcf5d60 # v2.0.0
         with:
-          name: test-results-py${{ matrix.python-version }}
+          name: pytest-py${{ matrix.python-version }}
           path: test-*.xml
-          retention-days: 30
+          reporter: java-junit
+          fail-on-error: false
 
   dependency-smoke:
     name: Dependency smoke test
