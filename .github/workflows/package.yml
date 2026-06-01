@@ -357,13 +357,16 @@ jobs:
 
       - name: Build Windows bundle
         run: |
-          mkdir artifacts\odysseus-windows
-          xcopy /E /I app.py core routes src services mcp_servers static config setup.py pyproject.toml requirements.txt MANIFEST.in README.md LICENSE artifacts\odysseus-windows\
-          xcopy /E /I scripts artifacts\odysseus-windows\scripts\
-          xcopy /E /I docker artifacts\odysseus-windows\docker\
-          xcopy /E /I packaging artifacts\odysseus-windows\packaging\
-          if exist media xcopy /E /I media artifacts\odysseus-windows\media\
-          powershell Compress-Archive -Path artifacts\odysseus-windows -DestinationPath "artifacts\odysseus-windows-${{ github.sha }}.zip"
+          New-Item -ItemType Directory -Force artifacts\odysseus-windows | Out-Null
+
+          Copy-Item app.py, setup.py, pyproject.toml, requirements.txt, MANIFEST.in, README.md, LICENSE artifacts\odysseus-windows\
+          Copy-Item core, routes, src, services, mcp_servers, static, config, scripts, docker, packaging artifacts\odysseus-windows\ -Recurse
+
+          if (Test-Path media) {
+            Copy-Item media artifacts\odysseus-windows\media -Recurse
+          }
+
+          Compress-Archive -Path artifacts\odysseus-windows -DestinationPath "artifacts\odysseus-windows-${{ github.sha }}.zip" -Force
 
       - name: Finalize artifacts
         run: bash scripts/ci/finalize-artifacts.sh artifacts
