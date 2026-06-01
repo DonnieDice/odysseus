@@ -1,4 +1,4 @@
-# <img src="./docs/icon.png" alt="Odysseus" width="28" height="28"> Odysseus
+# <img src="./media/icon.png" alt="Odysseus" width="28" height="28"> Odysseus
 ───────────────────────────────────────────────
 
 Odysseus vers. 1.0
