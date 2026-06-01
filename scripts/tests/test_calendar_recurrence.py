@@ -10,7 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from test_null_owner_gates import _import_calendar_helpers
+from .test_null_owner_gates import _import_calendar_helpers
 
 
 # ── _resolve_base_uid ──────────────────────────────────────────────────
