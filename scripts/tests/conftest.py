@@ -5,7 +5,7 @@ import types
 import importlib.util
 from unittest.mock import MagicMock
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 def _has_module(mod_name: str) -> bool:
     try:

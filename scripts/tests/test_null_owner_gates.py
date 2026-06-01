@@ -18,7 +18,7 @@ import pytest
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
-# `tests/conftest.py` stubs the heavy optional deps. We additionally
+# `scripts/tests/conftest.py` stubs the heavy optional deps. We additionally
 # stub `core.database` here because the real module instantiates
 # SQLAlchemy declarative classes at import-time — which blows up under
 # the conftest's `sqlalchemy.*` MagicMock stubs ("metaclass conflict").
