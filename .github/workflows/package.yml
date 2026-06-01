@@ -299,6 +299,88 @@ jobs:
           path: artifacts/
           retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
 
+  macos:
+    name: macOS standalone
+    runs-on: macos-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+
+      - name: Build macOS bundle
+        run: |
+          mkdir -p artifacts/odysseus-macos
+          cp -r app.py core routes src services mcp_servers static config setup.py pyproject.toml requirements.txt MANIFEST.in README.md LICENSE artifacts/odysseus-macos/
+          cp -r scripts artifacts/odysseus-macos/
+          cp -r docker artifacts/odysseus-macos/
+          cp -r packaging artifacts/odysseus-macos/
+          cp -r media artifacts/odysseus-macos/ 2>/dev/null || true
+          cd artifacts && zip -r "odysseus-macos-${{ github.sha }}.zip" odysseus-macos
+
+      - name: Finalize artifacts
+        run: bash scripts/ci/finalize-artifacts.sh artifacts
+
+      - name: Read package version
+        id: version
+        run: awk -F'"' '/^version = / { print "version=" $2; exit }' pyproject.toml >> "$GITHUB_OUTPUT"
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: odysseus-macos-${{ steps.version.outputs.version }}-${{ github.sha }}
+          path: artifacts/
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+  windows:
+    name: Windows standalone
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+
+      - name: Build Windows bundle
+        run: |
+          mkdir artifacts\odysseus-windows
+          xcopy /E /I app.py core routes src services mcp_servers static config setup.py pyproject.toml requirements.txt MANIFEST.in README.md LICENSE artifacts\odysseus-windows\
+          xcopy /E /I scripts artifacts\odysseus-windows\scripts\
+          xcopy /E /I docker artifacts\odysseus-windows\docker\
+          xcopy /E /I packaging artifacts\odysseus-windows\packaging\
+          if exist media xcopy /E /I media artifacts\odysseus-windows\media\
+          powershell Compress-Archive -Path artifacts\odysseus-windows -DestinationPath "artifacts\odysseus-windows-${{ github.sha }}.zip"
+
+      - name: Finalize artifacts
+        run: bash scripts/ci/finalize-artifacts.sh artifacts
+        shell: bash
+
+      - name: Read package version
+        id: version
+        run: awk -F'"' '/^version = / { print "version=" $2; exit }' pyproject.toml >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: odysseus-windows-${{ steps.version.outputs.version }}-${{ github.sha }}
+          path: artifacts/
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
   release:
     name: GitHub Release artifacts
     if: startsWith(github.ref, 'refs/tags/v')
@@ -311,6 +393,8 @@ jobs:
       - rpm
       - apk
       - aur
+      - macos
+      - windows
     steps:
       - name: Download package artifacts
         uses: actions/download-artifact@v4

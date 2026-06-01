@@ -81,11 +81,11 @@ target_count="$(
   grep -E "target: (debian12|debian13|ubuntu2404|ubuntu2604|fedora43|fedora44|el10|opensuse-tumbleweed|alpine320|alpine322|alpine323)" .github/workflows/package.yml | wc -l | tr -d ' '
 )"
 fixed_targets="$(
-  grep -E "name: (Python wheel and sdist|Git source archive|Docker image|AUR source package)" .github/workflows/package.yml | wc -l | tr -d ' '
+  grep -E "name: (Python wheel and sdist|Git source archive|Docker image|AUR source package|macOS standalone|Windows standalone)" .github/workflows/package.yml | wc -l | tr -d ' '
 )"
 total_targets=$((target_count + fixed_targets))
-if [ "${total_targets}" -ne 15 ]; then
-  echo "regression check failed: expected 15 package targets, found ${total_targets}" >&2
+if [ "${total_targets}" -ne 17 ]; then
+  echo "regression check failed: expected 17 package targets, found ${total_targets}" >&2
   exit 1
 fi
 
