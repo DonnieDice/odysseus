@@ -24,6 +24,29 @@ class TimestampMixin:
 # Get database URL from environment, default to SQLite
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/app.db")
 
+
+def _ensure_sqlite_parent_dir(database_url: str) -> None:
+    """Create the parent directory for file-backed SQLite databases.
+
+    PyInstaller onefile builds start with an empty working directory context
+    unless the user creates ./data manually. SQLite cannot create missing
+    parent directories, so sqlite:///./data/app.db fails with:
+    "unable to open database file".
+    """
+    if not database_url.startswith("sqlite:///"):
+        return
+
+    db_path = database_url.removeprefix("sqlite:///").split("?", 1)[0]
+    if not db_path or db_path == ":memory:":
+        return
+
+    parent = os.path.dirname(os.path.abspath(db_path))
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+
+
+_ensure_sqlite_parent_dir(DATABASE_URL)
+
 # Create engine
 engine = create_engine(
     DATABASE_URL,

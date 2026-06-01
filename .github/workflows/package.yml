@@ -353,7 +353,7 @@ jobs:
             -format UDZO \
             -fs HFS+ \
             -size "${DMG_MB}m" \
-            "artifacts/odysseus-macos-${{ github.sha }}.dmg"
+            "artifacts/odysseus-macos-${VERSION}.dmg"
 
       - name: Finalize artifacts
         run: |
@@ -393,8 +393,9 @@ jobs:
       - name: Build Windows .exe with PyInstaller
         run: |
           pyinstaller --onefile --name odysseus --add-data "static;static" --add-data "core;core" --add-data "routes;routes" --add-data "src;src" --add-data "services;services" --add-data "mcp_servers;mcp_servers" --add-data "config;config" --add-data "scripts;scripts" app.py
+          $VERSION = (Select-String -Path pyproject.toml -Pattern '^version = "(.*)"').Matches.Groups[1].Value
           New-Item -ItemType Directory -Force artifacts | Out-Null
-          Copy-Item dist/odysseus.exe "artifacts/odysseus-windows-${{ github.sha }}.exe"
+          Copy-Item dist/odysseus.exe "artifacts/odysseus-windows-$VERSION.exe"
 
       - name: Finalize artifacts
         run: |
@@ -435,39 +436,78 @@ jobs:
           pattern: odysseus-*
           path: release-artifacts
 
-      - name: Create GitHub Release
+      - name: Prepare release files
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
         run: |
-          mkdir -p release-files
+          VERSION="${TAG#v}"
+          mkdir -p release
 
-          # Collect only real package artifacts — skip per-bundle metadata files.
+          # Collect only real package binaries — skip metadata files.
           while IFS= read -r file; do
             name="$(basename "$file")"
             case "$name" in
               SHA256SUMS|manifest.txt|metadata.json) continue ;;
-              *) cp "$file" "release-files/${name}" ;;
+              *) cp "$file" "release/${name}" ;;
             esac
           done < <(find release-artifacts -type f | sort)
 
-          # Build release body from docker metadata if present.
-          NOTES="Versioned Odysseus package artifacts built by GitHub Actions."
-          DOCKER_MANIFEST="$(find release-artifacts -path '*/manifest.txt' -not -name '*.txt' | head -1 || true)"
+          cd release
+          sha256sum * > SHA256SUMS
+          echo "Release artifacts:"
+          ls -lah
+          cd ..
+
+      - name: Create release notes
+        run: |
+          VERSION="${TAG#v}"
+          DOCKER_MANIFEST="$(find release-artifacts -name 'manifest.txt' -exec grep -l '^image=' {} \; | head -1 || true)"
+          DOCKER_REF=""
           if [ -n "$DOCKER_MANIFEST" ]; then
             IMG="$(grep '^image=' "$DOCKER_MANIFEST" | cut -d= -f2- || true)"
             DIGEST="$(grep '^digest=' "$DOCKER_MANIFEST" | cut -d= -f2- || true)"
-            if [ -n "$IMG" ]; then
-              NOTES="${NOTES}\n\nDocker: \`${IMG}@${DIGEST}\`"
-            fi
+            [ -n "$IMG" ] && DOCKER_REF="\`${IMG}@${DIGEST}\`"
           fi
 
-          echo "Release artifacts:"
-          find release-files -type f | sort
+          {
+            echo "# Odysseus ${TAG}"
+            echo ""
+            echo "Self-hosted AI workspace — chat, agents, research, documents, memory, email, calendar."
+            echo ""
+            echo "## Downloads"
+            echo ""
+            echo "| Platform | File |"
+            echo "|----------|------|"
+            echo "| Python wheel | \`odysseus_ai_workspace-${VERSION}-py3-none-any.whl\` |"
+            echo "| Source (sdist) | \`odysseus-ai-workspace-${VERSION}.tar.gz\` |"
+            echo "| Git archive | \`odysseus-${VERSION}.tar.gz\` |"
+            [ -n "$DOCKER_REF" ] && echo "| Docker | ${DOCKER_REF} |"
+            echo "| macOS | \`odysseus-macos-${VERSION}.dmg\` |"
+            echo "| Windows | \`odysseus-windows-${VERSION}.exe\` |"
+            echo "| DEB (Debian 12/13, Ubuntu 24.04/26.04) | \`odysseus-ai-workspace_${VERSION}_*.deb\` |"
+            echo "| RPM (Fedora 43/44, EL10, openSUSE) | \`odysseus-ai-workspace-${VERSION}-*.rpm\` |"
+            echo "| APK (Alpine 3.20/3.22/3.23) | \`odysseus-ai-workspace_${VERSION}_*.apk.tar.gz\` |"
+            echo "| AUR | \`PKGBUILD\` |"
+            echo ""
+            echo "## Checksums"
+            echo ""
+            echo "SHA256SUMS included with every release."
+            echo ""
+            echo "## Docker"
+            echo ""
+            [ -n "$DOCKER_REF" ] && echo "Pull: \`docker pull ${DOCKER_REF}\`" || echo "Image published to GHCR."
+          } > RELEASE_NOTES.md
+        env:
+          TAG: ${{ github.ref_name }}
 
-          gh release create "$TAG" \
-            --repo "$GITHUB_REPOSITORY" \
-            --title "Odysseus ${TAG}" \
-            --notes "${NOTES}"
-
-          find release-files -type f -size +0c -print0 | xargs -0 -r -I{} gh release upload "$TAG" "{}" --repo "$GITHUB_REPOSITORY" --clobber
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
+          files: release/*
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
