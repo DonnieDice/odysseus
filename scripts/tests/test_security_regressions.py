@@ -512,7 +512,7 @@ def _load_search_content_for_test(monkeypatch, name="services.search.content_und
 
     spec = importlib.util.spec_from_file_location(
         name,
-        Path(__file__).resolve().parent.parent / "services" / "search" / "content.py",
+        Path(__file__).resolve().parents[2] / "services" / "search" / "content.py",
     )
     content = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(content)
