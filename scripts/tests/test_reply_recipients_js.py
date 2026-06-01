@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-_REPO = Path(__file__).resolve().parent.parent
+_REPO = Path(__file__).resolve().parents[2]
 _HELPER = _REPO / "static" / "js" / "emailLibrary" / "replyRecipients.js"
 _HAS_NODE = shutil.which("node") is not None
 

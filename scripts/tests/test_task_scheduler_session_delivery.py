@@ -1,8 +1,22 @@
 """Regression tests for task-result delivery into chat sessions (issue #326)."""
 import asyncio
+import sys
 import types as _types
+from unittest.mock import Mock
 
 import pytest
+
+# Other tests may stub core.database during collection. Drop any MagicMock
+# stubs so sqlalchemy's declarative base and real model classes load.
+def _drop_mocked_module_tree(prefix: str) -> None:
+    for name, module in list(sys.modules.items()):
+        if name == prefix or name.startswith(prefix + "."):
+            if isinstance(module, Mock):
+                sys.modules.pop(name, None)
+
+_drop_mocked_module_tree("sqlalchemy")
+_drop_mocked_module_tree("core")
+sys.modules.pop("src.database", None)
 
 sqlalchemy = pytest.importorskip("sqlalchemy")
 if not isinstance(sqlalchemy, _types.ModuleType):
