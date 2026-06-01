@@ -1,5 +1,7 @@
 import os
 import logging
+import sys
+from pathlib import Path
 from datetime import datetime
 from sqlalchemy import create_engine, Column, String, Text, Boolean, DateTime, Integer, ForeignKey, JSON, Index, func, text
 from sqlalchemy.types import TypeDecorator
@@ -21,8 +23,25 @@ class TimestampMixin:
     def updated_at(cls):
         return Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
+def _default_sqlite_path() -> Path:
+    """Return a writable default SQLite DB path.
+
+    Source runs keep the historical ./data/app.db behavior.
+    Packaged builds must not use the current working directory because the
+    launcher can start from a non-writable cwd on any platform.
+    """
+    if getattr(sys, "frozen", False):
+        return Path.home() / ".odysseus-social" / "data" / "app.db"
+
+    return Path("data") / "app.db"
+
+
+def _sqlite_url_from_path(path: Path) -> str:
+    return f"sqlite:///{path.expanduser().resolve().as_posix()}"
+
+
 # Get database URL from environment, default to SQLite
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/app.db")
+DATABASE_URL = os.getenv("DATABASE_URL") or _sqlite_url_from_path(_default_sqlite_path())
 
 
 def _ensure_sqlite_parent_dir(database_url: str) -> None:
@@ -40,9 +59,7 @@ def _ensure_sqlite_parent_dir(database_url: str) -> None:
     if not db_path or db_path == ":memory:":
         return
 
-    parent = os.path.dirname(os.path.abspath(db_path))
-    if parent:
-        os.makedirs(parent, exist_ok=True)
+    Path(db_path).expanduser().parent.mkdir(parents=True, exist_ok=True)
 
 
 _ensure_sqlite_parent_dir(DATABASE_URL)
