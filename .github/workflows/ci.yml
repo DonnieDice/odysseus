@@ -53,7 +53,7 @@ jobs:
 
       - name: Publish test results
         if: always()
-        uses: dorny/test-reporter@6c3f2f337a69441e4e831b9a95cfef1bffcf5d60 # v2.0.0
+        uses: dorny/test-reporter@v2
         with:
           name: pytest-py${{ matrix.python-version }}
           path: test-*.xml

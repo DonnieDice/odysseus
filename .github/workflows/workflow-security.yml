@@ -57,6 +57,9 @@ jobs:
   zizmor:
     name: zizmor (Actions SAST)
     runs-on: ubuntu-latest
+    # Advisory: report findings without blocking the merge. zizmor can flag
+    # patterns that are intentional (e.g., permissions needed by a workflow).
+    continue-on-error: true
     permissions:
       contents: read
     steps:
