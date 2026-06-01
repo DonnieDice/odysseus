@@ -498,7 +498,7 @@ jobs:
           TAG: ${{ github.ref_name }}
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@cfea534fc28a620b6f4e5aceaf93593622e1b791 # v2.2.2
+        uses: softprops/action-gh-release@da71916f27862026bd59214dea3c112392e0a57c # v2.2.2
         with:
           tag_name: ${{ github.ref_name }}
           body_path: RELEASE_NOTES.md
