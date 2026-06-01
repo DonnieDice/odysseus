@@ -1,4 +1,4 @@
-# <img src="./media/icon.png" alt="Odysseus" width="28" height="28"> Odysseus
+# <img src="./docs/icon.png" alt="Odysseus" width="28" height="28"> Odysseus
 ───────────────────────────────────────────────
 
 Odysseus vers. 1.0
@@ -11,7 +11,7 @@ Odysseus vers. 1.0
 [![JavaScript](https://img.shields.io/badge/javascript-ES2023-b7791f.svg)](static/)
 [![Docker](https://img.shields.io/badge/docker-ready-2c7a7b.svg)](Dockerfile)
 
-![Odysseus](media/odysseus.jpg)
+![Odysseus](docs/odysseus.jpg)
 
 A self-hosted AI workspace -- meant to be the self-hosted version of the UI experience you get from ChatGPT and Claude. But with more jank and fun. Running on your own hardware, with your own data -- local-first, privacy-first, and no trojan.
 
