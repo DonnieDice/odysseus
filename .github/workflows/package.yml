@@ -325,6 +325,10 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install pyinstaller
 
+      - name: Free runner disk space
+        run: |
+          sudo rm -rf /Library/Developer/CoreSimulator /opt/hostedtoolcache/CodeQL /usr/local/lib/android /usr/share/dotnet
+
       - name: Build macOS DMG with PyInstaller
         run: |
           pyinstaller --onefile --name odysseus --add-data "static:static" --add-data "core:core" --add-data "routes:routes" --add-data "src:src" --add-data "services:services" --add-data "mcp_servers:mcp_servers" --add-data "config:config" --add-data "scripts:scripts" app.py
